@@ -1,9 +1,10 @@
 defmodule WebCartWeb.CartItem do
-  defstruct [:product, :quantity]
+  defstruct [:name, :price, :quantity]
 
-  def new(product, quantity \\ 1) do
+  def new(name, price, quantity \\ 1) do
     %__MODULE__{
-      product: product,
+      name: name,
+      price: price,
       quantity: quantity
     }
   end

@@ -15,9 +15,9 @@ defmodule WebCart.Application do
       # Start Finch
       {Finch, name: WebCart.Finch},
       # Start the Endpoint (http/https)
-      WebCartWeb.Endpoint
-      # Start a worker by calling: WebCart.Worker.start_link(arg)
-      # {WebCart.Worker, arg}
+      WebCartWeb.Endpoint,
+      # Start CartServer with GenServer functions
+      WebCartWeb.CartServer
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

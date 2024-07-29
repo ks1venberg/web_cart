@@ -1,13 +1,20 @@
 defmodule WebCartWeb.CartItemTest do
   use ExUnit.Case
-  alias WebCartWeb.{Product, CartItem}
+  alias WebCartWeb.{CartServer, Product, CartItem}
+
+  setup do
+
+    # {:ok, _pid} = CartServer.start_link([])
+    CartServer.empty_cart()
+    :ok
+  end
 
   describe "CartItem.new" do
-    test "creates a new cart item" do
-      product = Product.new(1, "Product 1", 100)
-      cart_item = CartItem.new(product)
+    test "creates a new cart item without dicsount" do
+      product = Product.new("GR1", "Green tea", 3.11)
+      cart_item = CartServer.add_to_cart(product.id, 1)
 
-      assert %CartItem{product: ^product, quantity: 1} = cart_item
+      assert %CartItem{name: "Green tea", quantity: 1, price: 3.11} = Map.get(CartServer.get_cart(), "GR1")
     end
   end
 end

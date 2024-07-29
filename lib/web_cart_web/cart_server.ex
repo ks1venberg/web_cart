@@ -1,7 +1,10 @@
 defmodule WebCartWeb.CartServer do
   use GenServer
+  require Logger
 
   alias WebCartWeb.{Product, CartItem}
+
+  # Client API ##########
 
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
@@ -9,48 +12,61 @@ defmodule WebCartWeb.CartServer do
 
   def init(_state) do
     products = %{
-      1 => Product.new("GR1", "Green tea", 3.11),
-      2 => Product.new("SR1", "Strawberries", 5.00),
-      3 => Product.new("CF1", "Coffee", 11.23)
+      "GR1" => Product.new("GR1", "Green tea", 3.11),
+      "SR1" => Product.new("SR1", "Strawberries", 5.00),
+      "CF1" => Product.new("CF1", "Coffee", 11.23)
     }
-    {:ok, %{products: products, cart: %{}, discounts: %{}}}
+    {:ok, %{products: products, cart: %{}, discount_mode: true}}
   end
 
   def get_products do
     GenServer.call(__MODULE__, :get_products)
   end
 
-  def add_to_cart(product_id, quantity, role) do
-    GenServer.call(__MODULE__, {:add_to_cart, product_id, quantity, role})
+  def add_to_cart(product_id, quantity \\ 1) do
+    GenServer.call(__MODULE__, {:add_to_cart, product_id, quantity})
+  end
+
+  def reduce_item_count(product_id, quantity \\ -1) do
+    GenServer.call(__MODULE__, {:reduce_item_count, product_id, quantity})
   end
 
   def get_cart do
     GenServer.call(__MODULE__, :get_cart)
   end
 
-  def set_discount(role, product_id, discount_percentage) do
-    GenServer.call(__MODULE__, {:set_discount, role, product_id, discount_percentage})
+  def empty_cart() do
+    GenServer.call(__MODULE__, :empty_cart)
   end
+
+  def toggle_discount() do
+    GenServer.call(__MODULE__, :toggle_discount)
+  end
+
+  # Sever callbacks ##########
 
   def handle_call(:get_products, _from, state) do
-    {:reply, Map.values(state.products), state}
+    {:reply, state.products, state}
   end
 
-  def handle_call({:add_to_cart, product_id, quantity, role}, _from, state) do
+  def handle_call({:add_to_cart, product_id, quantity}, _from, state) do
     product = Map.get(state.products, product_id)
-    cart = state.cart
+    item = compose_cart_item(product, quantity, state.cart, state.discount_mode)
 
-    discount = Map.get(state.discounts, {role, product_id}, 0)
-    discounted_price = product.price * (1 - discount / 100)
-    cart_item = %CartItem{product: %Product{product | price: discounted_price}, quantity: quantity}
+    {:reply, :ok, %{state | cart: Map.put(state.cart, product_id, item)}}
+  end
 
-    updated_cart =
-      if Map.has_key?(cart, product_id) do
-        %{cart | product_id => %CartItem{cart[product_id] | quantity: cart[product_id].quantity + quantity}}
-      else
-        Map.put(cart, product_id, cart_item)
-      end
+  def handle_call({:reduce_item_count, product_id, quantity}, _from, state) do
 
+    updated_cart = case Map.get(state.cart[product_id]||%{}, :quantity) do
+      nil ->
+        state.cart
+      1 ->
+        Map.delete(state.cart, product_id)
+      _ ->
+        compose_cart_item(state.products[product_id], quantity, state.cart, state.discount_mode)
+        |>(&Map.put(state.cart, product_id, &1)).()
+    end
     {:reply, :ok, %{state | cart: updated_cart}}
   end
 
@@ -58,8 +74,48 @@ defmodule WebCartWeb.CartServer do
     {:reply, state.cart, state}
   end
 
-  def handle_call({:set_discount, role, product_id, discount_percentage}, _from, state) do
-    discounts = Map.put(state.discounts, {role, product_id}, discount_percentage)
-    {:reply, :ok, %{state | discounts: discounts}}
+  def handle_call(:empty_cart, _from, state) do
+    {:reply, :ok, %{state | cart: %{}}}
+  end
+
+  def handle_call(:toggle_discount, _from, state) do
+
+   discount_mode = case state.discount_mode do
+      true ->
+        false
+      _ ->
+        true
+    end
+
+    Logger.info("toggle_discount_ state: #{inspect(%{state |discount_mode: discount_mode})}")
+    {:reply, :ok, %{state |discount_mode: discount_mode}}
+  end
+
+  # Additional functions ##########
+
+  defp compose_cart_item(product, quantity, cart, true) do
+
+    new_quantity = (Map.get(cart[product.id]||%{}, :quantity, 0) + quantity)
+
+    price_incl_discount =
+      case %{product.id => new_quantity} do
+        %{"GR1" => new_quantity} ->
+          if new_quantity>1, do: product.price/2, else: product.price
+        %{"SR1" => new_quantity} ->
+          if new_quantity>=3, do: 4.5, else: product.price
+        %{"CF1" => new_quantity} ->
+          if new_quantity>=3, do: product.price*(2/3), else: product.price
+        _other ->
+          product.price
+      end
+
+      Logger.info("compose_cart_item price_incl_discount: #{inspect(product.id)}: #{inspect(price_incl_discount)}")
+
+    %CartItem{name: product.name, price: price_incl_discount, quantity: new_quantity}
+
+  end
+
+  defp compose_cart_item(product, quantity, cart, _discount_mode) do
+    %CartItem{name: product.name, price: product.price, quantity: Map.get(cart[product.id]||%{}, :quantity, 0) + quantity}
   end
 end
