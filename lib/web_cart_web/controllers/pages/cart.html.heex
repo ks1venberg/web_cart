@@ -1,0 +1,10 @@
+<h1>Shopping Cart</h1>
+<ul class="mt-10">
+<%= for {_id, item} <- @cart do %>
+  <li>
+    <%= item.name %> - $<%= item.price %> x <%= item.quantity %>
+  </li>
+<% end %>
+</ul>
+
+<a href="/"><span>Back to Products</span></a>

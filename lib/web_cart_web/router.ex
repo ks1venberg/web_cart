@@ -18,12 +18,12 @@ defmodule WebCartWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    post "/discounts", PageController, :discounts
+    post "/add_to_cart", PageController, :add_to_cart
+    get "/cart", CartController, :cart
+    post "/cart/add", CartController, :add
+    post "/cart/remove", CartController, :remove
   end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", WebCartWeb do
-  #   pipe_through :api
-  # end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:web_cart, :dev_routes) do

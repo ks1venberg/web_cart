@@ -16,11 +16,19 @@ defmodule WebCartWeb.CartServer do
       "SR1" => Product.new("SR1", "Strawberries", 5.00),
       "CF1" => Product.new("CF1", "Coffee", 11.23)
     }
-    {:ok, %{products: products, cart: %{}, discount_mode: true}}
+    {:ok, %{products: products, cart: %{}, discount_mode: "enabled"}}
   end
 
   def get_products do
     GenServer.call(__MODULE__, :get_products)
+  end
+
+  def get_cart do
+    GenServer.call(__MODULE__, :get_cart)
+  end
+
+  def get_state do
+    GenServer.call(__MODULE__, :get_state)
   end
 
   def add_to_cart(product_id, quantity \\ 1) do
@@ -31,22 +39,26 @@ defmodule WebCartWeb.CartServer do
     GenServer.call(__MODULE__, {:reduce_item_count, product_id, quantity})
   end
 
-  def get_cart do
-    GenServer.call(__MODULE__, :get_cart)
-  end
-
   def empty_cart() do
     GenServer.call(__MODULE__, :empty_cart)
   end
 
   def toggle_discount() do
-    GenServer.call(__MODULE__, :toggle_discount)
+    GenServer.cast(__MODULE__, :toggle_discount)
   end
 
   # Sever callbacks ##########
 
   def handle_call(:get_products, _from, state) do
     {:reply, state.products, state}
+  end
+
+  def handle_call(:get_cart, _from, state) do
+    {:reply, state.cart, state}
+  end
+
+  def handle_call(:get_state, _from, state) do
+    {:reply, state, state}
   end
 
   def handle_call({:add_to_cart, product_id, quantity}, _from, state) do
@@ -70,25 +82,17 @@ defmodule WebCartWeb.CartServer do
     {:reply, :ok, %{state | cart: updated_cart}}
   end
 
-  def handle_call(:get_cart, _from, state) do
-    {:reply, state.cart, state}
-  end
-
   def handle_call(:empty_cart, _from, state) do
     {:reply, :ok, %{state | cart: %{}}}
   end
 
-  def handle_call(:toggle_discount, _from, state) do
-
+  def handle_cast(:toggle_discount, state) do
    discount_mode = case state.discount_mode do
-      true ->
-        false
+      "enabled" ->
+        "disabled"
       _ ->
-        true
+        "enabled"
     end
-
-    Logger.info("toggle_discount_ state: #{inspect(%{state |discount_mode: discount_mode})}")
-    {:reply, :ok, %{state |discount_mode: discount_mode}}
   end
 
   # Additional functions ##########

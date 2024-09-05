@@ -1,4 +1,5 @@
-defmodule WebCartWeb.PageHTML do
+defmodule WebCartWeb.CartHTML do
   use WebCartWeb, :html
+
   embed_templates "pages/*"
 end
