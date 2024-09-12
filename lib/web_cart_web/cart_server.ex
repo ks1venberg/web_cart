@@ -87,17 +87,17 @@ defmodule WebCartWeb.CartServer do
   end
 
   def handle_cast(:toggle_discount, state) do
-   discount_mode = case state.discount_mode do
+    discount_mode = case state.discount_mode do
       "enabled" ->
         "disabled"
       _ ->
         "enabled"
     end
+    {:noreply, %{state |discount_mode: discount_mode}}
   end
 
   # Additional functions ##########
-
-  defp compose_cart_item(product, quantity, cart, true) do
+  defp compose_cart_item(product, quantity, cart, "enabled") do
 
     new_quantity = (Map.get(cart[product.id]||%{}, :quantity, 0) + quantity)
 

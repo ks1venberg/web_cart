@@ -6,7 +6,7 @@ defmodule WebCartWeb.PageController do
   def home(conn, _params) do
     products = CartServer.get_products()
     discount_mode = CartServer.get_state()
-    render(conn, :home, [layout: false, products: products, discount_mode: discount_mode])
+    render(conn, :home, [ layout: false, products: products, discount_mode: discount_mode])
   end
 
   # Adds an item to the cart
@@ -17,8 +17,7 @@ defmodule WebCartWeb.PageController do
 
   # Activates discount mode
   def discounts(conn, __params) do
-    discount_mode = CartServer.toggle_discount()
-    home(conn, discount_mode: discount_mode)
+    home(conn, discount_mode: CartServer.toggle_discount())
   end
 
 end
