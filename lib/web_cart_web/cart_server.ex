@@ -35,8 +35,12 @@ defmodule WebCartWeb.CartServer do
     GenServer.call(__MODULE__, {:add_to_cart, product_id, quantity})
   end
 
-  def reduce_item_count(product_id, quantity \\ -1) do
-    GenServer.call(__MODULE__, {:reduce_item_count, product_id, quantity})
+  def drop_item_count(product_id, quantity \\ -1) do
+    GenServer.call(__MODULE__, {:drop_item_count, product_id, quantity})
+  end
+
+  def remove_from_cart(product_id) do
+    GenServer.call(__MODULE__, {:remove_from_cart, product_id})
   end
 
   def empty_cart() do
@@ -68,7 +72,7 @@ defmodule WebCartWeb.CartServer do
     {:reply, :ok, %{state | cart: Map.put(state.cart, product_id, item)}}
   end
 
-  def handle_call({:reduce_item_count, product_id, quantity}, _from, state) do
+  def handle_call({:drop_item_count, product_id, quantity}, _from, state) do
 
     updated_cart = case Map.get(state.cart[product_id]||%{}, :quantity) do
       nil ->
@@ -80,6 +84,10 @@ defmodule WebCartWeb.CartServer do
         |>(&Map.put(state.cart, product_id, &1)).()
     end
     {:reply, :ok, %{state | cart: updated_cart}}
+  end
+
+  def handle_call({:remove_from_cart, product_id}, _from, state) do
+    {:reply, :ok, %{state | cart: Map.delete(state.cart, product_id)}}
   end
 
   def handle_call(:empty_cart, _from, state) do
@@ -115,11 +123,11 @@ defmodule WebCartWeb.CartServer do
 
       Logger.info("compose_cart_item price_incl_discount: #{inspect(product.id)}: #{inspect(price_incl_discount)}")
 
-    %CartItem{name: product.name, price: price_incl_discount, quantity: new_quantity}
+    %CartItem{id: product.id, name: product.name, default_price: product.price, price: price_incl_discount, quantity: new_quantity}
 
   end
 
   defp compose_cart_item(product, quantity, cart, _discount_mode) do
-    %CartItem{name: product.name, price: product.price, quantity: Map.get(cart[product.id]||%{}, :quantity, 0) + quantity}
+    %CartItem{id: product.id, name: product.name, default_price: product.price, price: product.price, quantity: Map.get(cart[product.id]||%{}, :quantity, 0) + quantity}
   end
 end

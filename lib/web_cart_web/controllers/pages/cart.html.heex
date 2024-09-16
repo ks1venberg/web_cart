@@ -1,10 +1,64 @@
-<h1>Shopping Cart</h1>
-<ul class="mt-10">
-<%= for {_id, item} <- @cart do %>
-  <li>
-    <%= item.name %> - $<%= item.price %> x <%= item.quantity %>
-  </li>
-<% end %>
-</ul>
-
-<a href="/"><span>Back to Products</span></a>
+<.flash_group flash={@flash} />
+<div class="w-full max-w-2xl lg:mx-0 py-4">
+  <a href="/">
+    <span class="text-sm px-2"><.icon name="hero-home" class="h-7 w-7 mb-2 bg-zinc-900" />
+    Back to main</span>
+  </a>
+  <p class="text-[2rem] font-semibold leading-10 tracking-tighter text-right text-zinc-900">
+    Products in your cart 
+    <.icon name="hero-shopping-cart-solid" class="h-7 w-7 bg-yellow-500" />
+  </p>
+</div>
+<div class="w-full sm:w-auto sm:px-2 md:px-4 lg:px-10">
+  <div class="mx-auto mt-5 max-w-xl lg:mx-0"> 
+    <table style="width:140%">
+      <tr class="text-left">
+        <th style="width:15%">Product</th>
+        <th style="width:10%">Quantity</th>
+        <th class="text-center" style="width:10%">Add</th>
+        <th class="text-center" style="width:10%">Drop</th>
+        <th style="width:10%">Remove</th>
+        <th style="width:10%">Price, £</th>
+        <th style="width:10%">Offer, £</th>
+        <th style="width:20%">Sum</th>
+      </tr>
+      <%= for item <- Map.values(@cart) do %>
+        <tr class="pt-6" style="line-height:200% text-md text-zinc-900">
+          <td><%= item.name %></td>
+          <td class="text-center"><%= item.quantity %></td>
+            <form action="/cart/add" method="post">
+            <input type="hidden" class="w-[7rem] h-[2.5rem] mx-0 rounded-xl border-zinc-300" type="number" name="quantity" placeholder="quantity" value="1">
+            <input type="hidden" name="id" value={item.id}>
+            <input type="hidden" name="_csrf_token" value={get_csrf_token()}>
+          <td class="text-center"><button class="w-[4rem] h-[2.5rem] relative rounded-xl text-md transition group-hover:bg-zinc-400 sm:group-hover:scale-105" type="submit">
+              <.icon name="hero-plus" class="h-7 w-7" />
+            </button></td>
+            </form>
+            <form action="/cart/drop" method="post">
+            <input type="hidden" class="w-[7rem] h-[2.5rem] mx-0 rounded-xl border-zinc-300" type="number" name="quantity" placeholder="quantity" value="-1">
+            <input type="hidden" name="id" value={item.id}>
+            <input type="hidden" name="_csrf_token" value={get_csrf_token()}>
+          <td class="text-center"><button class="w-[4rem] h-[2.5rem] relative rounded-xl text-md transition group-hover:bg-zinc-400 sm:group-hover:scale-105" type="submit">
+            <.icon name="hero-minus" class="h-7 w-7" />
+            </button></td>
+            </form>
+            <form action="/cart/remove" method="post">
+              <input type="hidden" name="id" value={item.id}>
+              <input type="hidden" name="_csrf_token" value={get_csrf_token()}>
+          <td><button class="w-[4rem] h-[2.5rem] relative rounded-xl text-md transition group-hover:bg-zinc-400 sm:group-hover:scale-105" type="submit">
+            <.icon name="hero-x-circle" class="h-7 w-7" />
+            </button></td>
+          <td><%= item.default_price %></td>
+          <td>
+            <%= if item.price != item.default_price do %>
+              <%= Float.round(item.price,2) %>
+              <%  else %>
+              <%="-"%>
+            <% end %>
+          </td>
+            </form>
+        </tr>
+      <% end %>
+    </table>
+  </div>
+</div>

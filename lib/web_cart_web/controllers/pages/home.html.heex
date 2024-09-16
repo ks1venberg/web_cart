@@ -1,6 +1,6 @@
 <.flash_group flash={@flash} />
-<div class="w-full max-w-xl lg:mx-0 px-6 py-5">
-  <p class="text-[2rem] mt-0 font-semibold leading-10 tracking-tighter text-right text-zinc-900">
+<div class="w-full max-w-xl lg:mx-0 py-5">
+  <p class="text-[2rem] font-semibold leading-10 tracking-tighter text-right text-zinc-900">
     WebCart app
   </p>
 </div>
@@ -23,15 +23,15 @@
           </form>
         </th>
       </tr>
-      <tr>
-        <td class="pt-2">
+      <tr class="pt-4">
+        <td>
           <ul style="line-height:200%">
             <li>CEO</li>
             <li>CTO</li>
             <li>COO</li>
           </ul>
         </td>
-        <td class="pt-2">
+        <td>
           <ul style="line-height:200%">
             <li>Offer for a green tea: buy-one-get-one-free</li>
             <li>For 3 or more strawberries new price is £4.50/item.</li>
@@ -56,8 +56,8 @@
             <td><input class="w-[7rem] h-[2.5rem] mx-0 rounded-xl border-zinc-300" type="number" name="quantity" placeholder="quantity" min="1"></td>
             <input type="hidden" name="id" value={product.id}>
             <input type="hidden" name="_csrf_token" value={get_csrf_token()}>
-            <td><button class="w-[4rem] h-[2.5rem] relative rounded-xl text-md bg-green-500 transition group-hover:bg-zinc-400 sm:group-hover:scale-105" type="submit">
-              <.icon name="hero-shopping-cart" class="h-7 w-7" />
+            <td><button style="border-width:1px" class="w-[4rem] h-[2.5rem] relative rounded-xl border-zinc-300 text-md text-green-500 transition group-hover:bg-zinc-400 sm:group-hover:scale-105" type="submit">
+              <.icon name="hero-shopping-cart-mini" class="h-7 w-7" />
             </button></td>
           </form>
         </tr>
@@ -68,7 +68,7 @@
         <span>
         View Cart
         </span>
-        <.icon name="hero-shopping-cart" class="h-7 w-7" />
+        <.icon name="hero-shopping-cart-mini" class="h-7 w-7" />
         </a>
       </div>
     </div>

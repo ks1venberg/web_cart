@@ -22,7 +22,9 @@ defmodule WebCartWeb.Router do
     post "/add_to_cart", PageController, :add_to_cart
     get "/cart", CartController, :cart
     post "/cart/add", CartController, :add
+    post "/cart/drop", CartController, :drop
     post "/cart/remove", CartController, :remove
+    post "/cart/empty", CartController, :empty_cart
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
