@@ -1,6 +1,5 @@
 defmodule WebCartWeb.CartServer do
   use GenServer
-  require Logger
 
   alias WebCartWeb.{Product, CartItem}
 
@@ -16,7 +15,7 @@ defmodule WebCartWeb.CartServer do
       "SR1" => Product.new("SR1", "Strawberries", 5.00),
       "CF1" => Product.new("CF1", "Coffee", 11.23)
     }
-    {:ok, %{products: products, cart: %{}, discount_mode: "enabled"}}
+    {:ok, %{products: products, cart: %{}, discount_mode: "enabled", total: 0.00}}
   end
 
   def get_products do
@@ -45,6 +44,11 @@ defmodule WebCartWeb.CartServer do
 
   def empty_cart() do
     GenServer.call(__MODULE__, :empty_cart)
+  end
+
+
+  def calculate_total() do
+    GenServer.call(__MODULE__, :calculate_total)
   end
 
   def toggle_discount() do
@@ -94,6 +98,21 @@ defmodule WebCartWeb.CartServer do
     {:reply, :ok, %{state | cart: %{}}}
   end
 
+  def handle_call(:calculate_total, _from, state) when state.cart == %{} do
+    {:reply, 0.00, state}
+  end
+
+  def handle_call(:calculate_total, _from, state) do
+    total = Enum.reduce(Map.values(state.cart), 0, fn x, acc ->
+      acc + (if state.discount_mode == "enabled" && x.price != "-" do
+        x.price * x.quantity
+        else
+        x.default_price * x.quantity
+        end)
+    end)
+    {:reply, Float.round(total, 2), %{state | total: Float.round(total, 2)}}
+  end
+
   def handle_cast(:toggle_discount, state) do
     discount_mode = case state.discount_mode do
       "enabled" ->
@@ -112,16 +131,14 @@ defmodule WebCartWeb.CartServer do
     price_incl_discount =
       case %{product.id => new_quantity} do
         %{"GR1" => new_quantity} ->
-          if new_quantity>1, do: product.price/2, else: product.price
+          if new_quantity>1, do: Float.round(product.price/2, 2), else: product.price
         %{"SR1" => new_quantity} ->
-          if new_quantity>=3, do: 4.5, else: product.price
+          if new_quantity>=3, do: 4.50, else: product.price
         %{"CF1" => new_quantity} ->
-          if new_quantity>=3, do: product.price*(2/3), else: product.price
+          if new_quantity>=3, do: Float.round(product.price*(2/3), 2), else: product.price
         _other ->
           product.price
       end
-
-      Logger.info("compose_cart_item price_incl_discount: #{inspect(product.id)}: #{inspect(price_incl_discount)}")
 
     %CartItem{id: product.id, name: product.name, default_price: product.price, price: price_incl_discount, quantity: new_quantity}
 

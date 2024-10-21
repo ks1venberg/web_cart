@@ -1,18 +1,17 @@
 defmodule WebCartWeb.CartController do
   use WebCartWeb, :controller
-  require Logger
 
   alias WebCartWeb.CartServer
 
   def cart(conn, _params) do
     cart = CartServer.get_cart()
-    discount_mode = CartServer.get_state()
-    render(conn, :cart, [ layout: false, cart: cart, discount_mode: discount_mode])
-    # render(conn, "cart.html", cart: cart)
+    discount_mode = CartServer.get_state().discount_mode
+    total = CartServer.calculate_total()
+
+    render(conn, :cart, [ layout: false, cart: cart, total: total, discount_mode: discount_mode])
   end
 
   def add(conn, %{"id" => id, "quantity" => quantity}) do
-    # Logger.info("CartController add: \n #{inspect(item)}")
     CartServer.add_to_cart(id, String.to_integer(quantity))
     cart(conn, %{})
   end
@@ -27,7 +26,7 @@ defmodule WebCartWeb.CartController do
     cart(conn, %{})
   end
 
-  def empty_cart(conn) do
+  def empty_cart(conn, %{}) do
     CartServer.empty_cart()
     cart(conn, %{})
   end

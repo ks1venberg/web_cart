@@ -1,20 +1,20 @@
-<.flash_group flash={@flash} />
+
 <div class="w-full max-w-xl lg:mx-0 py-5">
-  <p class="text-[2rem] font-semibold leading-10 tracking-tighter text-right text-zinc-900">
+  <p class="text-[2rem] font-bold leading-10 tracking-tighter text-right text-zinc-900">
     WebCart app
   </p>
 </div>
 <div class="w-full sm:w-auto sm:px-2 md:px-4 lg:px-10">
   <div class="mx-auto mt-5 max-w-xl lg:mx-0">
     <table style="width:140%">
-      <tr style="text-left text-xl font-bold">
+      <tr>
         <th style="width:25%" class="text-left text-xl font-bold text-zinc-900">Customers</th>
         <th style="width:50%" class="text-left text-xl font-bold text-zinc-900">Discount offers</th>
         <th style="width:25%">
           <form action="/discounts" method="post">
             <input type="hidden" name="_csrf_token" value={get_csrf_token()}>
             <button type="submit" style="border-width:2px"
-              class="h-[2.5rem] px-2 relative rounded-xl border-gray-400 text-left text-xl text-zinc-900"
+              class="min-h-[2.5rem] px-2 group relative rounded-xl border-gray-400 text-left text-xl text-zinc-900"
               >Offers
                 <span class="text-blue-700">
                   <%= WebCartWeb.CartServer.get_state().discount_mode %>
